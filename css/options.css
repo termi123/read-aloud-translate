@@ -511,3 +511,9 @@ input[type=checkbox], input[type=radio] {
 .dark-mode .setting-info-button[aria-expanded="true"] { background: #373d45; }
 .dark-mode .setting-info-popup { background: #323232; color: #ddd; border-color: #505050; }
 .dark-mode .setting-info-popup a { color: #a8bcff; }
+
+#names-editor {margin-top: 8px}
+#names-table {width: 100%; border-collapse: collapse}
+#names-table th {text-align: left; font-size: 12px; font-weight: 600; padding: 2px 4px}
+#names-table td {padding: 2px 4px; vertical-align: middle}
+#names-table input, #names-table select {width: 100%; min-width: 70px; padding: 4px 6px; font-size: 14px}

@@ -11,6 +11,8 @@
   <script src="js/jquery-3.7.1.min.js"></script>
   <script src="js/defaults.js"></script>
   <script src="js/tts-engines.js"></script>
+  <script src="js/name-detector.js"></script>
+  <script src="js/auto-names.js"></script>
   <script src="js/options.js"></script>
 </head>
 <body>
@@ -100,6 +102,66 @@
         <option value="3" data-i18n="options_highlighting_reader"></option>
       </select>
     </div>
+
+    <div class="layout">
+      <div><span>Dịch trước khi đọc / Translate first</span></div>
+      <select id="translate-enabled" class="form-control">
+        <option value="false">Tắt / Off</option>
+        <option value="true">Bật / On</option>
+      </select>
+
+      <div class="translate-visible"><span>Ngôn ngữ đích / Target</span></div>
+      <select id="translate-target" class="form-control translate-visible">
+        <option value="vi">Tiếng Việt</option>
+        <option value="en">English</option>
+        <option value="zh-CN">中文 (简体)</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="fr">Français</option>
+        <option value="es">Español</option>
+        <option value="de">Deutsch</option>
+        <option value="th">ไทย</option>
+        <option value="id">Bahasa Indonesia</option>
+      </select>
+
+      <div class="translate-visible"><span>Ngôn ngữ nguồn / Source</span></div>
+      <select id="translate-source" class="form-control translate-visible">
+        <option value="auto">Tự nhận diện / Auto</option>
+        <option value="zh-CN">中文 (简体)</option>
+        <option value="zh-TW">中文 (繁體)</option>
+        <option value="ja">日本語</option>
+        <option value="ko">한국어</option>
+        <option value="en">English</option>
+      </select>
+
+      <div class="translate-visible"><span>Bộ dịch</span></div>
+      <select id="translate-engine" class="form-control translate-visible">
+        <option value="gtx">Google (ổn định)</option>
+        <option value="html">Google dịch trang web (thử nghiệm)</option>
+      </select>
+
+      <div class="translate-visible"><span>Tên nhân vật</span></div>
+      <div class="translate-visible">
+        <small>Tự nhận diện tên (dạng pinyin) trong bản dịch và đổi thành tên Việt theo giới tính (nữ: Linh, Hương, Nhi…; nam: Dũng, Hùng, Quý…). Mỗi nhân vật giữ nguyên tên giữa các trang.</small><br>
+        <label><span>Ghi đè tên khi đọc: </span>
+          <select id="name-replace" class="form-control">
+            <option value="true">Bật</option>
+            <option value="false">Tắt (vẫn ghi nhận danh sách để kiểm tra)</option>
+          </select>
+        </label><br>
+        <button type="button" id="reset-names" class="btn btn-sm btn-light">Quên nhân vật đã nhớ (dùng khi sang truyện mới)</button>
+        <small id="reset-names-done"></small><br>
+        <button type="button" id="edit-names" class="btn btn-sm btn-light">Sửa danh sách tên</button>
+        <div id="names-editor" hidden>
+          <table id="names-table">
+            <thead><tr><th>Tên gốc</th><th>Tên Việt</th><th>Giới tính</th><th>Nghề nghiệp</th><th></th></tr></thead>
+            <tbody id="names-rows"></tbody>
+          </table>
+          <small id="names-empty">Chưa có nhân vật nào. Đọc một trang truyện đã bật dịch rồi quay lại.</small>
+        </div>
+      </div>
+    </div>
+
 
     <div class="form-group buttons">
       <button type="button" id="test-voice" class="btn btn-info">

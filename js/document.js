@@ -562,7 +562,8 @@ function Doc(source, onEnd) {
       })
     function read(texts) {
       texts = texts.map(preprocess)
-      return Promise.resolve()
+      return maybeTranslate(texts)
+        .then(function(t) {texts = t})
         .then(function() {
           if (info.detectedLang == null)
             return detectLanguage(texts)
@@ -591,6 +592,25 @@ function Doc(source, onEnd) {
           };
           if (rewinded) activeSpeech.gotoEnd();
           return activeSpeech.play();
+        })
+    }
+    function maybeTranslate(texts) {
+      return getSettings(["translateEnabled", "translateTarget", "translateSource", "translateEngine"])
+        .then(function(settings) {
+          if (!settings.translateEnabled) return texts
+          return translator.translateTexts(texts, settings)
+            .then(function(res) {
+              checkOpen()
+              if (!res.translated) return texts
+              info.translatedTo = settings.translateTarget || "vi"
+              info.detectedLang = info.translatedTo
+              var out = res.texts.filter(function(t) {return t && t.trim()})
+              return out.length ? out : texts
+            })
+            .catch(function(err) {
+              console.error("Translation failed, reading original text", err)
+              return texts
+            })
         })
     }
     function preprocess(text) {
@@ -683,7 +703,7 @@ function Doc(source, onEnd) {
       .then(function(settings) {
         console.log("Declared", info.lang)
         console.log("Detected", info.detectedLang)
-        var lang = (!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang;
+        var lang = info.translatedTo || ((!info.detectedLang || info.lang && info.lang.startsWith(info.detectedLang)) ? info.lang : info.detectedLang);
         console.log("Chosen", lang)
         var options = {
           rate: settings.rate || defaults.rate,

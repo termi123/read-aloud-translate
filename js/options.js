@@ -197,6 +197,34 @@ Promise.all([
   })
 
 
+  //translation
+  $("#translate-enabled").val(settings.translateEnabled ? "true" : "false")
+    .change(function() {
+      var on = JSON.parse($(this).val())
+      $(".translate-visible").toggle(on)
+      saveSettings({translateEnabled: on}).catch(console.error)
+    })
+  $(".translate-visible").toggle(settings.translateEnabled ? true : false)
+  $("#translate-target").val(settings.translateTarget || "vi")
+    .change(function() {saveSettings({translateTarget: $(this).val()}).catch(console.error)})
+  $("#translate-source").val(settings.translateSource || "auto")
+    .change(function() {saveSettings({translateSource: $(this).val()}).catch(console.error)})
+  $("#translate-engine").val(settings.translateEngine || "gtx")
+    .change(function() {saveSettings({translateEngine: $(this).val()}).catch(console.error)})
+  $("#name-replace").val(settings.nameReplace === false ? "false" : "true")
+    .change(function() {updateSettings({nameReplace: JSON.parse($(this).val())}).then(showConfirmation)})
+  $("#reset-names").click(function() {
+    updateSettings({nameMap: []}).then(function() {
+      $("#reset-names-done").text(" Đã xóa ✓")
+      if (!$("#names-editor").prop("hidden")) renderNames()
+    })
+  })
+  $("#edit-names").click(function() {
+    var editor = $("#names-editor")
+    editor.prop("hidden", !editor.prop("hidden"))
+    if (!editor.prop("hidden")) renderNames()
+  })
+
   //buttons
   $("#test-voice").click(() => voiceTestSubject.next())
 
@@ -584,4 +612,52 @@ function initSettingInfoPopup(buttonId, popupId, anchorId, labelKey) {
   window.addEventListener("resize", position)
   window.addEventListener("scroll", position)
   document.getElementById("voices").addEventListener("change", close)
+}
+
+
+//character names editor (list kept by js/auto-names.js in storage "nameMap")
+function renderNames() {
+  getSettings(["nameMap"]).then(async function(settings) {
+    var list = settings.nameMap || []
+    try {
+      // add pinyin to Chinese-named characters, then fold duplicates (same person listed as hanzi and as pinyin)
+      var enriched = await AutoNames.enrichPinyin(list, 20)
+      var merged = AutoNames.merge(list)
+      list = merged.state
+      if (enriched || merged.changed) await updateSettings({nameMap: list})
+    }
+    catch (err) {console.error(err)}
+    var body = $("#names-rows").empty()
+    $("#names-empty").toggle(!list.length)
+    $("#names-table").toggle(list.length > 0)
+    list.forEach(function(entry) {
+      var tr = $("<tr>").appendTo(body)
+      var nameCell = $("<td>").attr("title", [].concat(entry.variants, entry.aliases || []).join(", ")).appendTo(tr)
+      $("<div>").css("font-weight", 600).text(entry.variants[0] || entry.key).appendTo(nameCell)
+      if (entry.kind == "zh" && entry.pinyin) $("<small class='text-muted'>").text("(" + entry.pinyin + ")").appendTo(nameCell)
+      var vi = $("<input type='text' spellcheck='false' class='form-control'>").val(entry.vi)
+      var del = $("<button type='button' class='btn btn-sm btn-light' title='Xóa'>&times;</button>")
+      $("<td>").append(vi).appendTo(tr)
+      $("<td>").text(entry.gender == "M" ? "Nam" : entry.gender == "F" ? "Nữ" : "?").appendTo(tr)
+      $("<td>").text(entry.role || "").appendTo(tr)
+      $("<td>").append(del).appendTo(tr)
+      function save(change) {
+        getSettings(["nameMap"]).then(function(fresh) {
+          var map = fresh.nameMap || []
+          var target = map.filter(function(e) {return e.key == entry.key && e.surname == entry.surname})[0]
+          if (!target) return
+          change(target, map)
+          return updateSettings({nameMap: map}).then(showConfirmation)
+        })
+      }
+      vi.on("change", function() {
+        var v = vi.val().trim()
+        if (v) save(function(t) {t.vi = v})
+      })
+      del.on("click", function() {
+        save(function(t, map) {map.splice(map.indexOf(t), 1)})
+        tr.remove()
+      })
+    })
+  })
 }

@@ -8,7 +8,10 @@
   "default_locale": "en",
   "browser_specific_settings": {
     "gecko": {
-      "id": "read-aloud-translate@local.example"
+      "id": "read-aloud-translate@local.example",
+      "data_collection_permissions": {
+        "required": ["websiteContent"]
+      }
     },
     "gecko_android": {}
   },
